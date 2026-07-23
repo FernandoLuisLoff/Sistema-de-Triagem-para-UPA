@@ -39,3 +39,142 @@ O aluno deverá entregar:
 - instruções de execução;
 - instruções para execução dos testes;
 - exemplos de uso do sistema.
+
+---
+
+## Implementação dos Requisitos
+
+### R01 - Cadastro e gerenciamento de pacientes
+
+O sistema permite cadastrar pacientes com nome, CPF, idade, data de entrada, sintomas e prioridade. Cada cadastro recebe um código numérico incremental e o status inicial `aguardando`. Pelo menu também é possível listar, buscar, editar e remover os pacientes cadastrados.
+
+Os dados são tipados em `src/types/paciente.ts` por meio de `Paciente` e `PostPaciente`. Os serviços de criação, edição e remoção mantêm a lista atualizada e persistem as alterações no arquivo JSON.
+
+### R02 - Organização das funcionalidades do sistema
+
+O projeto foi separado por responsabilidade:
+
+- `src/menus/`: interação com o usuário no terminal;
+- `src/services/`: regras de negócio, atendimento, estatísticas e persistência;
+- `src/types/`: tipos e contratos das entidades;
+- `src/utils/`: validações e ordenação da fila.
+
+As funcionalidades são implementadas como funções reutilizáveis e módulos independentes. Há exportações nomeadas para utilitários e exportações default nos serviços de criar e editar pacientes.
+
+### R03 - Classificação e gerenciamento da fila de atendimento
+
+A classificação de risco usa as prioridades `1`, `2` e `3`, que representam baixa, média e alta prioridade. A fila considera primeiro a maior prioridade e, em caso de empate, a menor data de entrada.
+
+No menu de pacientes é possível chamar o próximo paciente aguardando e finalizar o atendimento atual. O sistema só permite um paciente em atendimento por vez e controla os status `aguardando`, `em_atendimento` e `atendido`.
+
+As decisões de fluxo usam `if`, `switch` e `while` nos menus e serviços. A regra de ordenação está centralizada em `src/utils/pacienteQueue.ts`.
+
+### R04 - Consulta, busca e geração de estatísticas
+
+O submenu de listagem permite:
+
+- ordenar pacientes por data de entrada ou prioridade;
+- visualizar apenas a fila de espera;
+- filtrar pacientes por prioridade;
+- buscar por nome, CPF ou código;
+- consultar estatísticas de status, prioridades, média de idade e fila atual.
+
+As operações utilizam os métodos de array `map`, `filter`, `find`, `some`, `reduce` e `join` em `src/services/estatisticasPacientes.service.ts`.
+
+### R05 - Modelagem das entidades do sistema
+
+O domínio é modelado com Type Aliases para paciente, estado da aplicação, prioridade, status e parâmetros dos menus. A prioridade é um Union Type (`1 | 2 | 3`) e o status de atendimento também é um Union Type.
+
+Os textos de prioridade e status são organizados com `Record`, enquanto o código do paciente é `readonly`. As atualizações de estado usam destructuring e spread operator, preservando os dados já existentes.
+
+### R06 - Simulação de comunicação com API
+
+O serviço `src/services/pacientePersistence.service.ts` simula uma camada externa assíncrona com `node:fs/promises`. Ao iniciar, a aplicação lê os pacientes de `data/pacientes.json`; ao cadastrar, editar, remover, chamar ou finalizar atendimento, grava novamente os dados em JSON.
+
+As operações são assíncronas e retornam `Promise`. O carregamento também normaliza registros antigos que não tenham o campo `status`, atribuindo-lhes o valor `aguardando`.
+
+### R07 - Validação automatizada das funcionalidades
+
+Os testes automatizados usam o Node.js Test Runner (`node:test`) no arquivo `src/services/pacientes.test.ts`. Eles validam:
+
+- chamada do paciente aguardando de maior prioridade;
+- finalização do atendimento;
+- busca e geração de estatísticas;
+- carregamento assíncrono de pacientes a partir de JSON.
+
+### RA01 - Validação de dados com Expressões Regulares
+
+As perguntas do terminal validam entradas com Regex antes de aceitá-las. Há validações para CPF, data, número, prioridade, nome e sintomas. Por exemplo, CPF aceita 11 dígitos ou o formato `XXX.XXX.XXX-XX`, e prioridade aceita somente `1`, `2` ou `3`.
+
+### RA02 - Aperfeiçoamento da tipagem utilizando Utility Types
+
+O tipo `PostPaciente` usa `Omit<Paciente, "codigo" | "status">`, evitando que informações controladas pelo sistema sejam enviadas no cadastro. Também são usados `Record<PrioridadePaciente, string>` e `Record<StatusAtendimento, string>` para garantir a cobertura de todas as opções válidas.
+
+### RA03 - Aplicação de recurso avançado do ecossistema TypeScript
+
+O projeto utiliza a biblioteca `ts-pattern` em `src/utils/pacienteQueue.ts`. A função `ordenarPacientes` aplica pattern matching para selecionar o tipo de ordenação: por data, prioridade ou fila. O método `.exhaustive()` força o TypeScript a exigir tratamento para todos os modos previstos.
+
+## Instruções de Execução
+
+Pré-requisito: Node.js 20 ou superior.
+
+1. Instale as dependências:
+
+```bash
+npm install
+```
+
+2. Inicie o sistema:
+
+```bash
+npm start
+```
+
+O comando compila os arquivos TypeScript para `dist/` e abre o menu no terminal. Os pacientes iniciais são lidos de `data/pacientes.json`.
+
+Para apenas validar a compilação, execute:
+
+```bash
+npm run build
+```
+
+## Instruções para Execução dos Testes
+
+Execute a suíte de testes automatizados com:
+
+```bash
+npm test
+```
+
+O comando executa os arquivos `*.test.ts` com o Node.js Test Runner e o carregador `tsx`.
+
+## Exemplos de Uso
+
+Após executar `npm start`, escolha a opção `1` no menu principal para abrir o menu de pacientes.
+
+### Cadastrar um paciente
+
+1. Escolha `1. Novo Paciente`.
+2. Informe os dados solicitados. Exemplo:
+
+```text
+Nome: Fernanda Alves Santos
+CPF: 123.456.789-01
+Idade: 29
+Data de entrada: 23/07/2026
+Sintomas: Dor abdominal intensa desde a madrugada
+Prioridade: 2
+```
+
+### Consultar a fila e chamar atendimento
+
+1. Escolha `2. Lista, Busca e Estatísticas`.
+2. Escolha `3. Visualizar fila de atendimento` para ver somente os pacientes aguardando, ordenados pela regra de prioridade.
+3. Volte ao menu de pacientes e escolha `5. Chamar Próximo Paciente`.
+4. Quando o atendimento terminar, escolha `6. Finalizar Atendimento Atual`.
+
+### Buscar e consultar estatísticas
+
+1. Escolha `2. Lista, Busca e Estatísticas`.
+2. Para localizar um paciente, escolha `5. Buscar paciente` e informe, por exemplo, `Maria`, um CPF completo ou um código.
+3. Para o relatório consolidado, escolha `6. Ver estatísticas`. O sistema exibe totais por status e prioridade, média de idade, próximo paciente e a fila atual.
