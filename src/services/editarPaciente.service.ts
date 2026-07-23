@@ -1,10 +1,12 @@
 import { AppState } from "../types/appState";
 import { Paciente, PostPaciente } from "../types/paciente";
+import { salvarPacientesService } from "./pacientePersistence.service";
 
 async function editarPacienteService(
     codigoPaciente: number,
     paciente: PostPaciente,
-    state: AppState
+    state: AppState,
+    filePath?: string
 ): Promise<AppState> {
     return new Promise((resolve, reject) => {
         console.log(`\nEditando paciente: ${paciente.nome}...`);
@@ -16,8 +18,15 @@ async function editarPacienteService(
                 return;
             }
 
+            const pacienteAtual = state.pacientes.find((currentPaciente) => currentPaciente.codigo === codigoPaciente);
+
+            if (!pacienteAtual) {
+                reject(`\nPaciente com código ${codigoPaciente} não encontrado!`);
+                return;
+            }
+
             const updatedPaciente: Paciente = {
-                codigo: codigoPaciente,
+                ...pacienteAtual,
                 ...paciente
             };
 
@@ -25,9 +34,11 @@ async function editarPacienteService(
                 pacienteAtual.codigo === codigoPaciente ? updatedPaciente : pacienteAtual
             );
 
-            const newState = { ...state, pacientes };            
+            const newState = { ...state, pacientes };
 
-            resolve(newState);
+            salvarPacientesService(pacientes, filePath)
+                .then(() => resolve(newState))
+                .catch(reject);
             
             console.log("\nPaciente editado com sucesso!");
         }, 1000);

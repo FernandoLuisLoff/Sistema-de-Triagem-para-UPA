@@ -1,4 +1,5 @@
 import { PrioridadePaciente } from "./prioridadePaciente";
+import { StatusAtendimento } from "./statusAtendimento";
 
 export type Paciente = {
     readonly codigo: number;
@@ -8,6 +9,7 @@ export type Paciente = {
     dataEntrada: string;
     sintomas: string;
     prioridade: PrioridadePaciente;
+    status: StatusAtendimento;
 }
 
-export type PostPaciente = Omit<Paciente, "codigo">;
+export type PostPaciente = Omit<Paciente, "codigo" | "status">;

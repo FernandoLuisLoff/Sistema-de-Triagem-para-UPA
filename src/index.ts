@@ -5,7 +5,7 @@ import readline from "readline/promises";
 import { stdin as input, stdout as output } from "process";
 
 async function main() {
-    let appState = appStateInit();
+    let appState = await appStateInit();
     const rl = readline.createInterface({ input, output });
 
     while (appState.running) {

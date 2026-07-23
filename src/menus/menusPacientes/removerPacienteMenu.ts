@@ -18,6 +18,7 @@ export async function removerPacienteMenu(params: ParamsMenu) {
     try {
         const newState = await removerPacienteService(codigoPaciente, getAppState());
         setAppState(newState);
+        await rl.question("\nPressione ENTER para continuar...");
     } catch (error) {
         await errorCase(error, rl);
     }

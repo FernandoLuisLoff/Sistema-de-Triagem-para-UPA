@@ -1,0 +1,24 @@
+{
+  "pacientes": [
+    {
+      "codigo": 1,
+      "nome": "Maria Aparecida Souza",
+      "cpf": "12345678901",
+      "idade": 68,
+      "dataEntrada": "21/07/2026",
+      "sintomas": "Dor no peito e falta de ar há duas horas.",
+      "prioridade": 3,
+      "status": "atendido"
+    },
+    {
+      "codigo": 2,
+      "nome": "Joao Carlos Ferreira",
+      "cpf": "98765432100",
+      "idade": 34,
+      "dataEntrada": "22/07/2026",
+      "sintomas": "Febre persistente, tosse e dores no corpo.",
+      "prioridade": 2,
+      "status": "aguardando"
+    }
+  ]
+}
